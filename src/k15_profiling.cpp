@@ -1,5 +1,5 @@
-#include "k15_profiling.hpp"
-#include "k15_platform.hpp"
+#include "k15_std/include/k15_profiling.hpp"
+#include "k15_std/include/k15_platform.hpp"
 
 namespace k15
 {

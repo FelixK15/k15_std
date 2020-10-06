@@ -1,5 +1,6 @@
-#include "k15_format.hpp"
-#include "k15_container.hpp"
+#include "k15_std/include/k15_format.hpp"
+#include "k15_std/include/k15_container.hpp"
+#include "k15_std/include/k15_memory.hpp"
 
 namespace k15
 {
@@ -53,7 +54,7 @@ namespace k15
         {
             return error_id::out_of_memory;
         }
-        const size_t bytesCopied = copyMemoryNonOverlapping8( (byte*)pBuffer, value.getLength(), (const byte*)value.getStart(), value.getLength() );
+        const size_t bytesCopied = copyMemoryNonOverlapping( pBuffer, value.getLength(), value.getStart(), value.getLength() );
         return bytesCopied == value.getLength() ? error_id::success : error_id::internal;
     }
 

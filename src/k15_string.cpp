@@ -1,7 +1,27 @@
-#include "k15_string.hpp"
+#include "k15_std/include/k15_string.hpp"
 
 namespace k15
 {
+    char toLower( char character )
+    {
+        if( character <= 'Z' && character >= 'A' )
+        {
+            return character - 32;
+        }
+
+        return character;
+    }
+
+    char toUpper( char character )
+    {
+        if( character <= 'z' && character >= 'a' )
+        {
+            return character + 32;
+        }
+
+        return character;
+    }
+
     size_t getStringLength( const char* pString )
     {
         size_t length = 0u;
@@ -11,6 +31,24 @@ namespace k15
         }
 
         return length;
+    }
+
+    bool compareStringNonCaseSensitive( const char* pStringA, uint32 stringALength, const char* pStringB )
+    {
+        if (stringALength == 0u)
+        {
+            return false;
+        }
+
+        for( uint32 charIndex = 0u; charIndex < stringALength; ++charIndex )
+        {
+            if (toLower(pStringA[charIndex]) != toLower(pStringB[charIndex]))
+            {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     string_view::string_view()

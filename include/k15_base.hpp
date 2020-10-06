@@ -1,11 +1,18 @@
 #ifndef K15_BASE_INCLUDE
 #define K15_BASE_INCLUDE
 
+#define K15_BREAK __asm{ int 3 }
+#define K15_ASSERT(expr) if(!(expr)) { K15_BREAK; }
+    
+#define K15_UNUSED_VARIABLE(var) (void)(var)
+
+#define K15_TRUE    1
+#define K15_FALSE   0
+
+#define K15_ENABLED(var) (var==K15_TRUE)
+
 #include "k15_base_types.hpp"
 #include "k15_result.hpp"
-
-#define K15_ASSERT(x) if(!(x)){  }
-#define K15_UNUSED_VARIABLE(x) (void)(x)
 
 namespace k15
 {

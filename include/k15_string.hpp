@@ -6,7 +6,10 @@
 
 namespace k15
 {
+    char toLower( char character );
+    char toUpper( char character );
     size_t getStringLength( const char* pString );
+    bool compareStringNonCaseSensitive( const char* pStringA, uint32 stringALength, const char* pStringB );
 
     class string_view
     {

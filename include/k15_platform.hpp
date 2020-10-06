@@ -6,14 +6,7 @@
 
 namespace k15
 {
-    enum class platform_io_handle : uint8
-    {
-        stdout,
-        stdin,
-        stderr
-    };
-
-    result< void > printString( const string_view& text, platform_io_handle targetHandle );
+    result< void > printString( const string_view& text );
     timestamp getCurrentTime();
 };
 

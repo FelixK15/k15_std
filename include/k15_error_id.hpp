@@ -9,6 +9,9 @@ namespace k15
     {
         success,
         out_of_memory,
+        socket_error,
+        listen_error,
+        parse_error,
         internal
     };
 

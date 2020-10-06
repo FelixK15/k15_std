@@ -15,12 +15,6 @@ namespace k15
     }
 
     template< typename T>
-    const T* slice< T >::getStart() const
-    {
-        return m_pBuffer;
-    }
-
-    template< typename T>
     void slice< T >::clear()
     {
         if( !is_trivially_destructible< T >::value )
@@ -58,13 +52,31 @@ namespace k15
         return true;
     }
 
-    template< typename T>
+    template< typename T >
     T* slice< T >::getStart()
     {
         return m_pBuffer;
     }
 
-    template< typename T>
+    template< typename T >
+    const T* slice< T >::getStart() const
+    {
+        return m_pBuffer;
+    }
+
+    template< typename T >
+    T* slice< T >::getEnd()
+    {
+        return m_pBuffer + m_size;
+    }
+
+    template< typename T >
+    const T* slice< T >::getEnd() const
+    {
+        return m_pBuffer + m_size;
+    }
+
+    template< typename T >
     T* slice< T >::pushBack( T value )
     {
         T* pValue = pushBack();
@@ -73,7 +85,7 @@ namespace k15
         return pValue;
     }
 
-    template< typename T>
+    template< typename T >
     T* slice< T >::pushBack()
     {
         return pushBackRange(1u);
@@ -84,13 +96,13 @@ namespace k15
     {
         if( m_size + elementCount >= m_capacity )
         {
-            if( !m_pGrowBufferFunction(this, m_size + elementCount) )
+            if( !m_pGrowBufferFunction(this, m_pAllocator, m_size + elementCount) )
             {
                 return nullptr;
             }
         }
 
-        //K15_ASSERT(pBuffer != nullptr);
+        K15_ASSERT( m_pBuffer != nullptr );
 
         T* pDataStart = m_pBuffer + m_size;
         m_size += elementCount;
@@ -112,14 +124,14 @@ namespace k15
     template< typename T >
     T& slice< T >::getElementByIndex( size_t index )
     {
-       // K15_ASSERT( index < m_size );
+        K15_ASSERT( index < m_size );
         return m_pBuffer[ index ];
     }
 
     template< typename T >
     const T& slice< T >::getElementByIndex( size_t index ) const
     {
-        //K15_ASSERT( index < m_size );
+        K15_ASSERT( index < m_size );
         return m_pBuffer[ index ];
     }
 
@@ -136,12 +148,19 @@ namespace k15
     }
 
     template< typename T, uint32 Size >
-    dynamic_array< T, Size >::dynamic_array()
-    {
-        m_pBuffer = m_staticBuffer;
-        m_capacity = Size;
-        m_size = 0;
+    dynamic_array< T, Size >::dynamic_array( memory_allocator* pAllocator, size_t initialCapacity )
+    { 
+        m_pBuffer       = m_staticBuffer;
+        m_isInitialized = false;
+        m_capacity      = Size;
+        m_size          = 0;
         m_pGrowBufferFunction = dynamic_array<T, Size>::growBuffer;
+
+        if( pAllocator != nullptr )
+        {
+            const bool createdSuccessfully = create( pAllocator, initialCapacity );
+            K15_ASSERT( createdSuccessfully );
+        }
     }
 
     template< typename T, uint32 Size >
@@ -151,23 +170,29 @@ namespace k15
     }
 
     template< typename T, uint32 Size >
-    bool8 dynamic_array< T, Size >::create( size_t initialCapacity )
+    bool8 dynamic_array< T, Size >::create( memory_allocator* pAllocator, size_t initialCapacity )
     {
-        return growBuffer( this, initialCapacity );
+        K15_ASSERT( !m_isInitialized );
+        const bool8 createdSuccessfully = growBuffer( this, pAllocator, initialCapacity );
+        m_isInitialized = true;
+        m_pAllocator = pAllocator;
+
+        return createdSuccessfully;
     }
 
     template< typename T, uint32 Size >
     void dynamic_array< T, Size >::freeBuffer()
     {
+        K15_ASSERT( m_pAllocator != nullptr );
         if( m_pBuffer != m_staticBuffer )
         {
-            free(m_pBuffer);
+            m_pAllocator->free( m_pBuffer );
             m_pBuffer = nullptr;
         }
     }
 
     template< typename T, uint32 Size >
-    bool8 dynamic_array< T, Size >::growBuffer( slice< T >* pSlice, uint32 capacity )
+    bool8 dynamic_array< T, Size >::growBuffer( slice< T >* pSlice, memory_allocator* pAllocator, uint32 capacity )
     {
         dynamic_array<T, Size>* pArray = (dynamic_array<T, Size>*)pSlice;
         const int newCapacity = getMax( capacity, pArray->m_capacity * 2 );
@@ -178,7 +203,7 @@ namespace k15
         }
 
         const size_t newBufferSizeInBytes = sizeof(T) * newCapacity;
-        T* pNewBuffer = (T*)malloc( newBufferSizeInBytes );
+        T* pNewBuffer = (T*)pAllocator->allocate( newBufferSizeInBytes );
         if (pNewBuffer == nullptr)
         {
             return false;
@@ -194,12 +219,20 @@ namespace k15
     }
 
     template< typename T >
-    dynamic_array< T >::dynamic_array()
+    dynamic_array< T >::dynamic_array( memory_allocator* pAllocator, size_t initialCapacity )
     {
-        m_pBuffer     = nullptr;
-        m_capacity    = 0u;
-        m_size        = 0;
+        m_pAllocator        = nullptr;
+        m_pBuffer           = nullptr;
+        m_capacity          = 0u;
+        m_size              = 0;
+        m_isInitialized     = false;
         m_pGrowBufferFunction = dynamic_array< T >::growBuffer;
+
+        if( pAllocator != nullptr )
+        {
+            const bool createdSuccessfully = create( pAllocator, initialCapacity );
+            K15_ASSERT( createdSuccessfully );
+        }
     }
     
     template< typename T >
@@ -209,26 +242,36 @@ namespace k15
     }
     
     template< typename T >
-    bool8 dynamic_array< T >::create( size_t initialCapacity )
+    bool8 dynamic_array< T >::create( memory_allocator* pAllocator, size_t initialCapacity )
     {
-        return growBuffer( this, initialCapacity );
+        K15_ASSERT( !m_isInitialized );
+        const bool8 createdSuccessfully = growBuffer( this, pAllocator, initialCapacity );
+        m_isInitialized = true;
+        m_pAllocator = pAllocator;
+
+        return createdSuccessfully;
     }
 
     template< typename T >
     void dynamic_array< T >::freeBuffer()
     {
-        free( m_pBuffer );
-        m_pBuffer = nullptr;
+        if( m_pBuffer != nullptr )
+        {
+            K15_ASSERT(m_pAllocator != nullptr);
+            m_pAllocator->free( m_pBuffer );
+            m_pBuffer = nullptr;
+        }
     }
 
     template< typename T >
-    bool8 dynamic_array< T >::growBuffer( slice< T >* pSlice, uint32 capacity )
+    bool8 dynamic_array< T >::growBuffer( slice< T >* pSlice, memory_allocator* pAllocator, uint32 capacity )
     {
         dynamic_array< T >* pArray = ( dynamic_array< T >* )pSlice;
+
         const int newCapacity = capacity;
         const size_t newBufferSizeInBytes = sizeof(T) * newCapacity;
 
-        T* pNewBuffer = (T*)malloc( newBufferSizeInBytes );
+        T* pNewBuffer = (T*)pAllocator->allocate( newBufferSizeInBytes );
         if (pNewBuffer == nullptr)
         {
             return false;

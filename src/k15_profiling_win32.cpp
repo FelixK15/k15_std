@@ -1,5 +1,6 @@
-#include "k15_profiling.hpp"
-#include "k15_time.hpp"
+#include "k15_std/include/k15_profiling.hpp"
+#include "k15_std/include/k15_time.hpp"
+#include "k15_std/include/k15_memory.hpp"
 #include <windows.h>
 
 namespace k15
@@ -20,7 +21,8 @@ namespace k15
                 __debugbreak();
             }
 
-            profilingZones.create( 128 );
+            //FK: use custom allocator
+            profilingZones.create( getCrtMemoryAllocator(), 128 );
         }
 
         LARGE_INTEGER performanceFrequency;

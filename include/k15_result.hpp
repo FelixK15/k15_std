@@ -20,8 +20,8 @@ namespace k15
         string_view getErrorString() const;
 
     private:
-        T           value;
-        error_id    errorId;
+        T           m_value;
+        error_id    m_errorId;
     };
 
     template<>
@@ -36,7 +36,7 @@ namespace k15
         string_view getErrorString() const;
         
     private:
-        error_id errorId;
+        error_id    m_errorId;
     };
 }
 

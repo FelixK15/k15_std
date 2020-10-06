@@ -1,4 +1,4 @@
-#include "k15_platform.hpp"
+#include "k15_std/include/k15_platform.hpp"
 
 #ifndef _WIN32
 #   error This header should only be compiled when targeting the win32 operating system.
@@ -11,28 +11,9 @@
 
 namespace k15
 {
-    static long mapPlatformHandle( platform_io_handle handle )
+    result< void > printString( const string_view& text )
     {
-        switch( handle )
-        {
-            case platform_io_handle::stdout:
-                return STD_OUTPUT_HANDLE;
-
-            case platform_io_handle::stdin:
-                return STD_INPUT_HANDLE;
-
-            case platform_io_handle::stderr:
-                return STD_ERROR_HANDLE;
-        }
-
-        K15_ASSERT( false );
-        return 0u;
-    }
-
-    result< void > printString( const string_view& text, platform_io_handle targetHandle )
-    {
-        const DWORD handleIdentifier = mapPlatformHandle( targetHandle );
-        const HANDLE pIoHandle = GetStdHandle( handleIdentifier );
+        const HANDLE pIoHandle = GetStdHandle( STD_OUTPUT_HANDLE );
         if( pIoHandle == INVALID_HANDLE_VALUE )
         {
             //FK: todo: Map win32 error to error_id

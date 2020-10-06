@@ -9,7 +9,7 @@ namespace k15
     template< typename T >
     class slice
     {
-        typedef bool8 (growBufferFunction)( slice< T >* pSlice, uint32 capacity  );
+        typedef bool8 (growBufferFunction)( slice< T >* pSlice, memory_allocator* pAllocator, uint32 capacity  );
     
     public:
         slice();
@@ -17,6 +17,9 @@ namespace k15
 
         T* getStart();
         const T* getStart() const;
+
+        T* getEnd();
+        const T* getEnd() const;
 
         void clear();
 
@@ -39,6 +42,7 @@ namespace k15
         uint32 m_capacity;
         uint32 m_size;
 
+        memory_allocator*   m_pAllocator;
         T*                  m_pBuffer;
         growBufferFunction* m_pGrowBufferFunction;
     };
@@ -47,34 +51,39 @@ namespace k15
     class dynamic_array : public slice< T >
     {
     public:
-        dynamic_array();
+        dynamic_array( memory_allocator* pAllocator = nullptr, size_t initialCapacity = 32u );
         ~dynamic_array();
 
-        bool8 create( size_t initialCapacity );
+        bool8 create( memory_allocator* pAllocator, size_t initialCapacity );
 
     private:
         void freeBuffer();
 
     private:
-        static bool8 growBuffer( slice< T >* pSlice, uint32 capacity );
+        static bool8 growBuffer( slice< T >* pSlice, memory_allocator* pAllocator, uint32 capacity );
 
-        T m_staticBuffer[Size];
+    private:
+        bool8   m_isInitialized;
+        T       m_staticBuffer[Size];
     };
 
     template< typename T >
     class dynamic_array< T, 0u > : public slice< T >
     {
     public:
-        dynamic_array();
+        dynamic_array( memory_allocator* pAllocator = nullptr, size_t initialCapacity = 32u );
         ~dynamic_array();
 
-        bool8 create( size_t initialCapacity );
+        bool8 create( memory_allocator* pAllocator, size_t initialCapacity );
     
     private:
         void freeBuffer();
 
     private:
-        static bool8 growBuffer( slice< T >* pSlice, uint32 capacity );
+        static bool8 growBuffer( slice< T >* pSlice, memory_allocator* pAllocator, uint32 capacity );
+
+    private:
+        bool8    m_isInitialized;
     };
 };
 

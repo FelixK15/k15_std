@@ -1,8 +1,50 @@
-#include "k15_memory.hpp"
-#include <intrin.h>
+#include "k15_std/include/k15_memory.hpp"
+
+#ifdef _MSC_VER 
+#   include <intrin.h>
+#else
+#   error include correct intrin.h for this compiler
+#endif
 
 namespace k15
 {
+    memory_allocator::memory_allocator()
+    {
+
+    }
+
+    memory_allocator::~memory_allocator()
+    {
+
+    }
+
+#if K15_ENABLED( K15_CRT_ALLOCATOR )
+    crt_memory_allocator::crt_memory_allocator()
+    {
+
+    }
+
+    crt_memory_allocator::~crt_memory_allocator()
+    {
+
+    }
+
+    void* crt_memory_allocator::allocate( size_t sizeInBytes, size_t alignmentInBytes )
+    {
+        return _aligned_malloc( sizeInBytes, alignmentInBytes );
+    }
+
+    void crt_memory_allocator::free( void* pPointer )
+    {
+        _aligned_free( pPointer );
+    }
+
+    memory_allocator* getCrtMemoryAllocator()
+    {
+        static crt_memory_allocator crtMemoryAllocator;
+        return &crtMemoryAllocator;
+    }
+#endif
     template< typename T >
     static void copyNonOverlapping( void* pDestination, const void* pSource, size_t sourceSizeInBytes )
     {
@@ -26,7 +68,7 @@ namespace k15
     template<>
     static void copyNonOverlapping<byte>( void* pDestination, const void* pSource, size_t sourceSizeInBytes )
     {
-        __movsq( (unsigned long long*)pDestination, (const unsigned long long*)pSource, sourceSizeInBytes/sizeof(long long) );
+        __movsb( (byte*)pDestination, (byte*)pSource, sourceSizeInBytes );
     }
 
     bool8 copyMemoryNonOverlappingWord( void* pDestination, size_t destinationCapacityInBytes, const void* pSource, size_t sourceSizeInBytes )

@@ -3,6 +3,8 @@
 
 #include "k15_base_types.hpp"
 #include "k15_string.hpp"
+#include "k15_time.hpp"
+
 namespace k15
 {
     struct profiling_zone_info
