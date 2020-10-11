@@ -12,7 +12,7 @@ namespace k15
     size_t getStringLength( const char* pString );
     bool compareStringNonCaseSensitive( const char* pStringA, const char* pStringB );
 
-    const char* findNextAsciiWhiteSpace( const char* pString );
+    const char* getAfterNextAsciiWhiteSpace( const char* pString );
 
     class string_view
     {

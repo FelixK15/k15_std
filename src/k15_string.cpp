@@ -65,7 +65,7 @@ namespace k15
         {
             if( isAsciiWhiteSpace( *pStringRunningPtr++ ) )
             {
-                return *pStringRunningPtr;
+                return pStringRunningPtr;
             }
         }
 
