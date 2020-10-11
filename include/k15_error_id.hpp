@@ -12,7 +12,9 @@ namespace k15
         socket_error,
         listen_error,
         parse_error,
-        internal
+        internal,
+        not_supported,
+        not_implemented
     };
 
     string_view getErrorString( error_id errorId)
@@ -27,6 +29,12 @@ namespace k15
             
             case error_id::internal:
                 return "internal";
+            
+            case error_id::not_supported:
+                return "not supported";
+
+            case error_id::not_implemented:
+                return "not implemented";
         }
 
         return string_view::empty;
