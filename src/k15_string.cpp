@@ -22,8 +22,15 @@ namespace k15
         return character;
     }
 
+    bool isAsciiWhiteSpace( char character )
+    {
+        return character == ' ' || character == '\t' || character == '\n';
+    }
+
     size_t getStringLength( const char* pString )
     {
+        K15_ASSERT( pString != nullptr );
+
         size_t length = 0u;
         while( *pString++ != 0 )
         {
@@ -33,22 +40,36 @@ namespace k15
         return length;
     }
 
-    bool compareStringNonCaseSensitive( const char* pStringA, uint32 stringALength, const char* pStringB )
+    bool compareStringNonCaseSensitive( const char* pStringA, const char* pStringB )
     {
-        if (stringALength == 0u)
-        {
-            return false;
-        }
+        K15_ASSERT( pStringA != nullptr );
+        K15_ASSERT( pStringB != nullptr );
 
-        for( uint32 charIndex = 0u; charIndex < stringALength; ++charIndex )
+        while( *pStringA != 0 && *pStringB != 0 )
         {
-            if (toLower(pStringA[charIndex]) != toLower(pStringB[charIndex]))
+            if( toLower( *pStringA++ ) != toLower( *pStringB++ ) )
             {
                 return false;
             }
         }
 
         return true;
+    }
+
+    const char* getAfterNextAsciiWhiteSpace( const char* pString )
+    {
+        K15_ASSERT( pString != nullptr );
+        const char* pStringRunningPtr = pString;
+        
+        while( *pStringRunningPtr != 0 )
+        {
+            if( isAsciiWhiteSpace( *pStringRunningPtr++ ) )
+            {
+                return *pStringRunningPtr;
+            }
+        }
+
+        return pString;
     }
 
     string_view::string_view()

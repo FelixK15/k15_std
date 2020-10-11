@@ -8,8 +8,11 @@ namespace k15
 {
     char toLower( char character );
     char toUpper( char character );
+    bool isAsciiWhiteSpace( char character );
     size_t getStringLength( const char* pString );
-    bool compareStringNonCaseSensitive( const char* pStringA, uint32 stringALength, const char* pStringB );
+    bool compareStringNonCaseSensitive( const char* pStringA, const char* pStringB );
+
+    const char* findNextAsciiWhiteSpace( const char* pString );
 
     class string_view
     {
