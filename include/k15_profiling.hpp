@@ -7,49 +7,49 @@
 
 namespace k15
 {
-struct profiling_zone_info
-{
-    string_view zoneName;
-    timestamp   delta;
-};
-
-struct profiling_zone_handle
-{
-    static const profiling_zone_handle invalid;
-
-    profiling_zone_handle()
+    struct profiling_zone_info
     {
-        handle = ~0;
-    }
+        string_view zoneName;
+        timestamp   delta;
+    };
 
-    profiling_zone_handle( uint32 handle )
+    struct profiling_zone_handle
     {
-        this->handle = handle;
-    }
+        static const profiling_zone_handle invalid;
 
-    uint32 handle;
-};
+        profiling_zone_handle()
+        {
+            handle = ~0;
+        }
 
-class profiling_zone_scope
-{
-  public:
-    profiling_zone_scope( const string_view& zoneName );
-    ~profiling_zone_scope();
+        profiling_zone_handle( uint32 handle )
+        {
+            this->handle = handle;
+        }
 
-  private:
-    profiling_zone_handle m_profilingZoneHandle;
-};
+        uint32 handle;
+    };
 
-struct profiling_context;
+    class profiling_zone_scope
+    {
+      public:
+        profiling_zone_scope( const string_view& zoneName );
+        ~profiling_zone_scope();
 
-profiling_context* getProfilingContext();
+      private:
+        profiling_zone_handle m_profilingZoneHandle;
+    };
 
-profiling_zone_handle startProfilingZone( profiling_context* pProfilingContext, const string_view& profilingZoneName );
-void                  stopProfilingZone( profiling_context* pProfilingContext, const profiling_zone_handle& profilingZoneHandle );
+    struct profiling_context;
 
-bool getProfilingZoneInfos( profiling_context* pProfilingContext, slice< profiling_zone_info >* pOutProfilingZones );
+    profiling_context* getProfilingContext();
 
-void newProflingFrame( profiling_context* pProfilingContext );
+    profiling_zone_handle startProfilingZone( profiling_context* pProfilingContext, const string_view& profilingZoneName );
+    void                  stopProfilingZone( profiling_context* pProfilingContext, const profiling_zone_handle& profilingZoneHandle );
+
+    bool getProfilingZoneInfos( profiling_context* pProfilingContext, slice< profiling_zone_info >* pOutProfilingZones );
+
+    void newProflingFrame( profiling_context* pProfilingContext );
 } // namespace k15
 
 #endif

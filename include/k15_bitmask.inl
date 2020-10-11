@@ -1,46 +1,46 @@
 namespace k15
 {
-struct bitmask_index
-{
-    size_t arrayIndex;
-    size_t slotIndex;
-};
 
-bitmask_index getBitmaskIndex( size_t flagValue, size_t max )
-{
-    bitmask_index index;
-    index.arrayIndex = flagValue / max;
-    index.slotIndex  = flagValue % max;
+    template < typename T, typename MASK_TYPE >
+    bool8 bitmask< T, MASK_TYPE >::isFlagSet( T flag ) const
+    {
+        return ( m_bitmask & ( 1 << ( MASK_TYPE )flag ) ) > 0u;
+    }
 
-    return index;
-}
+    template < typename T, typename MASK_TYPE >
+    void bitmask< T, MASK_TYPE >::toggleFlag( T flag )
+    {
+        m_bitmask ^= ( 1 << ( MASK_TYPE )flag );
+    }
 
-template < typename T, T MAX >
-bool8 bitmask< T, MAX >::isFlagSet( T flag ) const
-{
-    const bitmask_index& index = getBitmaskIndex( ( size_t )flag, ( size_t )MAX );
-    return ( m_bitmask[ index.arrayIndex ] & ( 1 << index.slotIndex ) ) > 0u;
-}
+    template < typename T, typename MASK_TYPE >
+    void bitmask< T, MASK_TYPE >::setFlag( T flag )
+    {
+        m_bitmask |= ( 1 << ( MASK_TYPE )flag );
+    }
 
-template < typename T, T MAX >
-void bitmask< T, MAX >::toggleFlag( T flag )
-{
-    const bitmask_index& index = getBitmaskIndex( ( size_t )flag, ( size_t )MAX );
-    m_bitmask[ index.arrayIndex ] ^= ( 1 << index.slotIndex );
-}
+    template < typename T, typename MASK_TYPE >
+    void bitmask< T, MASK_TYPE >::clearFlag( T flag )
+    {
+        m_bitmask &= ~( 1 << ( MASK_TYPE )flag );
+    }
 
-template < typename T, T MAX >
-void bitmask< T, MAX >::setFlag( T flag )
-{
-    const bitmask_index& index = getBitmaskIndex( ( size_t )flag, ( size_t )MAX );
-    m_bitmask[ index.arrayIndex ] |= ( 1 << index.slotIndex );
-}
+    template < typename T, typename MASK_TYPE >
+    void bitmask< T, MASK_TYPE >::setIf( T flag, bool condition )
+    {
+        if ( condition )
+        {
+            setFlag( flag );
+        }
+    }
 
-template < typename T, T MAX >
-void bitmask< T, MAX >::clearFlag( T flag )
-{
-    const bitmask_index& index = getBitmaskIndex( ( size_t )flag, ( size_t )MAX );
-    m_bitmask[ index.arrayIndex ] &= ~( 1 << index.slotIndex );
-}
+    template < typename T, typename MASK_TYPE >
+    void bitmask< T, MASK_TYPE >::clearIf( T flag, bool condition )
+    {
+        if ( condition )
+        {
+            clearFlag( flag );
+        }
+    }
 
 } // namespace k15

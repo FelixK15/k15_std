@@ -5,14 +5,14 @@
 
 namespace k15
 {
-template < typename... Args >
-result< void > formatString( slice< char >* pTarget, const string_view& format, Args... args );
+    template < typename... Args >
+    result< void > formatString( slice< char >* pTarget, const string_view& format, Args... args );
 
-template < typename... Args >
-result< void > printFormattedText( const string_view& format, Args... args );
+    template < typename... Args >
+    result< void > printFormattedText( const string_view& format, Args... args );
 
-result< void > formatToString( slice< char >* pTarget, const string_view& value );
-result< void > formatToString( slice< char >* pTarget, const error_id& errorId );
+    result< void > formatToString( slice< char >* pTarget, const string_view& value );
+    result< void > formatToString( slice< char >* pTarget, const error_id& errorId );
 }; // namespace k15
 
 #include "k15_format.inl"

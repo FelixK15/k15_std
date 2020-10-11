@@ -6,38 +6,38 @@
 
 namespace k15
 {
-template < typename T >
-class result
-{
-  public:
-    result( T value );
-    result( error_id error );
+    template < typename T >
+    class result
+    {
+      public:
+        result( T value );
+        result( error_id error );
 
-    T           getValue() const;
-    error_id    getError() const;
-    bool        hasError() const;
-    bool        isOk() const;
-    string_view getErrorString() const;
+        T           getValue() const;
+        error_id    getError() const;
+        bool        hasError() const;
+        bool        isOk() const;
+        string_view getErrorString() const;
 
-  private:
-    T        m_value;
-    error_id m_errorId;
-};
+      private:
+        T        m_value;
+        error_id m_errorId;
+    };
 
-template <>
-class result< void >
-{
-  public:
-    result( error_id error );
+    template <>
+    class result< void >
+    {
+      public:
+        result( error_id error );
 
-    error_id    getError() const;
-    bool        hasError() const;
-    bool        isOk() const;
-    string_view getErrorString() const;
+        error_id    getError() const;
+        bool        hasError() const;
+        bool        isOk() const;
+        string_view getErrorString() const;
 
-  private:
-    error_id m_errorId;
-};
+      private:
+        error_id m_errorId;
+    };
 } // namespace k15
 
 #include "k15_result.inl"

@@ -20,37 +20,37 @@
 
 namespace k15
 {
-template < typename T >
-class slice;
+    template < typename T >
+    class slice;
 
-template < typename T, uint32 Size >
-class dynamic_array;
+    template < typename T, uint32 Size >
+    class dynamic_array;
 
-class string_view;
+    class string_view;
 
-template < typename T >
-constexpr const T& getMin( const T& a, const T& b )
-{
-    return a > b ? b : a;
-}
+    template < typename T >
+    constexpr const T& getMin( const T& a, const T& b )
+    {
+        return a > b ? b : a;
+    }
 
-template < typename T >
-constexpr const T& getMax( const T& a, const T& b )
-{
-    return a > b ? a : b;
-}
+    template < typename T >
+    constexpr const T& getMax( const T& a, const T& b )
+    {
+        return a > b ? a : b;
+    }
 
-template < typename T >
-struct is_trivially_assignable
-{
-    constexpr static bool value = __is_trivially_assignable( T, T );
-};
+    template < typename T >
+    struct is_trivially_assignable
+    {
+        constexpr static bool value = __is_trivially_assignable( T, T );
+    };
 
-template < typename T >
-struct is_trivially_destructible
-{
-    constexpr static bool value = __is_trivially_destructible( T );
-};
+    template < typename T >
+    struct is_trivially_destructible
+    {
+        constexpr static bool value = __is_trivially_destructible( T );
+    };
 } // namespace k15
 
 #endif //K15_BASE_INCLUDE
