@@ -2,122 +2,131 @@
 
 namespace k15
 {
-    char toLower( char character )
+char toAsciiLower( char asciiRune )
+{
+    if ( asciiRune <= 'Z' && asciiRune >= 'A' )
     {
-        if( character <= 'Z' && character >= 'A' )
+        return asciiRune + 32;
+    }
+
+    return asciiRune;
+}
+
+char toAsciiUpper( char asciiRune )
+{
+    if ( asciiRune <= 'z' && asciiRune >= 'a' )
+    {
+        return asciiRune - 32;
+    }
+
+    return asciiRune;
+}
+
+bool isAsciiWhiteSpace( char asciiRune )
+{
+    return asciiRune == ' ' || asciiRune == '\t' || asciiRune == '\n';
+}
+
+size_t getAsciiStringLength( const char* pAsciiString )
+{
+    K15_ASSERT( pAsciiString != nullptr );
+
+    size_t length = 0u;
+    while ( *pAsciiString++ != 0 )
+    {
+        ++length;
+    }
+
+    return length;
+}
+
+bool compareAsciiStringNonCaseSensitive( const char* pAsciiStringA, const char* pAsciiStringB )
+{
+    K15_ASSERT( pAsciiStringA != nullptr );
+    K15_ASSERT( pAsciiStringB != nullptr );
+
+    while ( *pAsciiStringA != 0 && *pAsciiStringB != 0 )
+    {
+        if ( toAsciiLower( *pAsciiStringA++ ) != toAsciiLower( *pAsciiStringB++ ) )
         {
-            return character - 32;
+            return false;
         }
-
-        return character;
     }
 
-    char toUpper( char character )
+    return true;
+}
+
+const char* findNextAsciiWhiteSpace( const char* pAsciiString )
+{
+    K15_ASSERT( pAsciiString != nullptr );
+    const char* pAsciiStringRunningPtr = pAsciiString;
+
+    while ( !isAsciiWhiteSpace( *pAsciiStringRunningPtr ) )
     {
-        if( character <= 'z' && character >= 'a' )
+        if ( *pAsciiStringRunningPtr++ == 0 )
         {
-            return character + 32;
+            return pAsciiString;
         }
-
-        return character;
     }
 
-    bool isAsciiWhiteSpace( char character )
-    {
-        return character == ' ' || character == '\t' || character == '\n';
-    }
+    return pAsciiStringRunningPtr;
+}
 
-    size_t getStringLength( const char* pString )
-    {
-        K15_ASSERT( pString != nullptr );
+string_view::string_view()
+{
+    *this = empty;
+}
 
-        size_t length = 0u;
-        while( *pString++ != 0 )
-        {
-            ++length;
-        }
+string_view::string_view( const string_view& stringView )
+{
+    pData  = stringView.getStart();
+    length = stringView.getLength();
+}
 
-        return length;
-    }
+string_view::string_view( const char* pString )
+{
+    pData = pString;
 
-    bool compareStringNonCaseSensitive( const char* pStringA, const char* pStringB )
-    {
-        K15_ASSERT( pStringA != nullptr );
-        K15_ASSERT( pStringB != nullptr );
+    //FK: TODO: Use utf8 functions
+    length = getAsciiStringLength( pString );
+}
 
-        while( *pStringA != 0 && *pStringB != 0 )
-        {
-            if( toLower( *pStringA++ ) != toLower( *pStringB++ ) )
-            {
-                return false;
-            }
-        }
+string_view::string_view( const char* pString, size_t stringLength )
+{
+    pData  = pString;
+    length = stringLength;
+}
 
-        return true;
-    }
+string_view::string_view( const char* pStart, const char* pEnd )
+{
+    K15_ASSERT( pStart < pEnd );
+    pData  = pStart;
+    length = pEnd - pStart;
+}
 
-    const char* getAfterNextAsciiWhiteSpace( const char* pString )
-    {
-        K15_ASSERT( pString != nullptr );
-        const char* pStringRunningPtr = pString;
-        
-        while( *pStringRunningPtr != 0 )
-        {
-            if( isAsciiWhiteSpace( *pStringRunningPtr++ ) )
-            {
-                return pStringRunningPtr;
-            }
-        }
+size_t string_view::getLength() const
+{
+    return length;
+}
 
-        return pString;
-    }
+const char* string_view::getStart() const
+{
+    return pData;
+}
 
-    string_view::string_view()
-    {
-        *this = empty;
-    }
+const char* string_view::getEnd() const
+{
+    return pData + length;
+}
 
-    string_view::string_view( const string_view& stringView )
-    {
-        pData   = stringView.getStart();
-        length  = stringView.getLength();
-    }
+bool8 string_view::isEmpty() const
+{
+    return length == 0u;
+}
 
-    string_view::string_view( const char* pString )
-    {
-        pData = pString;
-        length = getStringLength( pString );
-    }
-    
-    string_view::string_view( const char* pString, size_t stringLength )
-    {
-        pData = pString;
-        length = stringLength;
-    }
-
-    size_t string_view::getLength() const
-    {
-        return length;
-    }
-
-    const char* string_view::getStart() const
-    {
-        return pData;
-    }
-
-    const char* string_view::getEnd() const
-    {
-        return pData + length;
-    }
-
-    bool8 string_view::isEmpty() const
-    {
-        return length == 0u;
-    }
-
-    char string_view::operator[](size_t index) const
-    {
-        K15_ASSERT(index < length);
-        return pData[ index ];
-    }
-};
+char string_view::operator[]( size_t index ) const
+{
+    K15_ASSERT( index < length );
+    return pData[ index ];
+}
+}; // namespace k15

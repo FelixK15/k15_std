@@ -6,38 +6,39 @@
 
 namespace k15
 {
-    char toLower( char character );
-    char toUpper( char character );
-    bool isAsciiWhiteSpace( char character );
-    size_t getStringLength( const char* pString );
-    bool compareStringNonCaseSensitive( const char* pStringA, const char* pStringB );
+char   toAsciiLower( char asciiRune );
+char   toAsciiUpper( char asciiRune );
+bool   isAsciiWhiteSpace( char asciiRune );
+size_t getAsciiStringLength( const char* pAsciiString );
+bool   compareAsciiStringNonCaseSensitive( const char* pAsciiStringA, const char* pAsciiStringB );
 
-    const char* getAfterNextAsciiWhiteSpace( const char* pString );
+const char* findNextAsciiWhiteSpace( const char* pAsciiString );
 
-    class string_view
-    {
-    public:
-        string_view();
-        string_view( const string_view& stringView );
-        string_view( const char* pString );
-        string_view( const char* pString, size_t stringLength );
+class string_view
+{
+  public:
+    string_view();
+    string_view( const string_view& stringView );
+    string_view( const char* pString );
+    string_view( const char* pString, size_t stringLength );
+    string_view( const char* pStart, const char* pEnd );
 
-        size_t getLength() const;
-        const char* getStart() const;
-        const char* getEnd() const;
-        bool8 isEmpty() const;
+    size_t      getLength() const;
+    const char* getStart() const;
+    const char* getEnd() const;
+    bool8       isEmpty() const;
 
-        char operator[](size_t index) const;
+    char operator[]( size_t index ) const;
 
-    public:
-        static const string_view empty;
+  public:
+    static const string_view empty;
 
-    private:
-        const char* pData;
-        size_t      length;
-    };
-
-    const string_view string_view::empty = string_view("");
+  private:
+    const char* pData;
+    size_t      length;
 };
+
+const string_view string_view::empty = string_view( "" );
+}; // namespace k15
 
 #endif //K15_STRING_INCLUDE
