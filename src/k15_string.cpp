@@ -79,54 +79,109 @@ namespace k15
 
     string_view::string_view( const string_view& stringView )
     {
-        pData  = stringView.getStart();
-        length = stringView.getLength();
+        m_pData  = stringView.getStart();
+        m_length = stringView.getLength();
     }
 
     string_view::string_view( const char* pString )
     {
-        pData = pString;
+        m_pData = pString;
 
         //FK: TODO: Use utf8 functions
-        length = getAsciiStringLength( pString );
+        m_length = getAsciiStringLength( pString );
     }
 
     string_view::string_view( const char* pString, size_t stringLength )
     {
-        pData  = pString;
-        length = stringLength;
+        m_pData  = pString;
+        m_length = stringLength;
     }
 
     string_view::string_view( const char* pStart, const char* pEnd )
     {
         K15_ASSERT( pStart < pEnd );
-        pData  = pStart;
-        length = pEnd - pStart;
+        m_pData  = pStart;
+        m_length = pEnd - pStart;
     }
 
     size_t string_view::getLength() const
     {
-        return length;
+        return m_length;
+    }
+
+    bool string_view::isEmpty() const
+    {
+        return m_length == 0u;
+    }
+
+    bool string_view::hasElements() const
+    {
+        return m_length != 0u;
     }
 
     const char* string_view::getStart() const
     {
-        return pData;
+        return m_pData;
     }
 
     const char* string_view::getEnd() const
     {
-        return pData + length;
+        return m_pData + m_length;
     }
 
-    bool8 string_view::isEmpty() const
+    const char& string_view::getFirst() const
     {
-        return length == 0u;
+        K15_ASSERT( m_length > 0u );
+        return m_pData[ 0u ];
+    }
+
+    const char& string_view::getLast() const
+    {
+        K15_ASSERT( m_length > 0u );
+        return m_pData[ m_length - 1u ];
+    }
+
+    size_t string_view::findLast( char character ) const
+    {
+        for ( size_t stringIndex = m_length - 1; stringIndex != 0; --stringIndex )
+        {
+            if ( m_pData[ stringIndex ] == character )
+            {
+                return stringIndex;
+            }
+        }
+
+        return invalidIndex;
+    }
+
+    bool string_view::contains( char character ) const
+    {
+        for ( size_t stringIndex = 0u; stringIndex < m_length; ++stringIndex )
+        {
+            if ( m_pData[ stringIndex ] == character )
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    string_view string_view::subString( size_t startIndex ) const
+    {
+        K15_ASSERT( startIndex < m_length );
+        return string_view( m_pData + startIndex, getEnd() );
+    }
+
+    string_view string_view::subString( size_t startIndex, size_t length ) const
+    {
+        K15_ASSERT( startIndex + length < m_length );
+        return string_view( m_pData + startIndex, m_pData + startIndex + length );
     }
 
     char string_view::operator[]( size_t index ) const
     {
-        K15_ASSERT( index < length );
-        return pData[ index ];
+        K15_ASSERT( index < m_length );
+        return m_pData[ index ];
     }
 }; // namespace k15

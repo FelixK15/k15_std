@@ -14,7 +14,8 @@ namespace k15
         parse_error,
         internal,
         not_supported,
-        not_implemented
+        not_implemented,
+        not_found
     };
 
     string_view getErrorString( error_id errorId )

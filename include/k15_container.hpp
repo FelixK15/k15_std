@@ -21,6 +21,12 @@ namespace k15
         T*       getEnd();
         const T* getEnd() const;
 
+        T&       getFirst();
+        const T& getFirst() const;
+
+        T&       getLast();
+        const T& getLast() const;
+
         void clear();
 
         bool swapTo( slice< T >* pContainer );
@@ -96,6 +102,8 @@ namespace k15
       private:
         bool8 m_isInitialized;
     };
+
+    using dynamic_string = dynamic_array< char >;
 }; // namespace k15
 
 #include "k15_container.inl"

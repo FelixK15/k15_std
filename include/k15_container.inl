@@ -103,6 +103,34 @@ namespace k15
     }
 
     template < typename T >
+    T& slice< T >::getFirst()
+    {
+        K15_ASSERT( m_size > 0u );
+        return m_pBuffer[ 0u ];
+    }
+
+    template < typename T >
+    const T& slice< T >::getFirst() const
+    {
+        K15_ASSERT( m_size > 0u );
+        return m_pBuffer[ 0u ];
+    }
+
+    template < typename T >
+    T& slice< T >::getLast()
+    {
+        K15_ASSERT( m_size > 0u );
+        return m_pBuffer[ m_size - 1 ];
+    }
+
+    template < typename T >
+    const T& slice< T >::getLast() const
+    {
+        K15_ASSERT( m_size > 0u );
+        return m_pBuffer[ m_size - 1 ];
+    }
+
+    template < typename T >
     T* slice< T >::pushBack( T value )
     {
         T* pValue = pushBack();
