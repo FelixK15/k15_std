@@ -11,34 +11,31 @@ namespace k15
     {
       public:
         path( memory_allocator* pAllocator );
+        path( memory_allocator* pAllocator, const string_view& path );
 
-        void setRoot( const string_view& root );
-        void setAbsolutePath( const string_view& absolutePath );
-        void setRelativePath( const string_view& relativePath );
-        void setFileNameWithExtension( const string_view& fileName );
-        void setFileNameWithoutExtensions( const string_view& fileName );
-        void setFileExtension( const string_view& fileExtensions );
-
-        string_view getAbsolutePath() const;
-        string_view getRelativePath() const;
-        string_view getFileExtension() const;
-        string_view getFileName() const;
-        string_view getFileNameWithoutExtension() const;
+        void setCombinedPath( const string_view& pathA, const string_view& pathB );
 
         bool isDirectory() const;
         bool isFile() const;
 
+        bool isEmpty() const;
+
+        void clear();
+
+        bool     hasError() const;
+        error_id getError() const;
+
       private:
-        void createFullPath();
-        void copyAndCleanPath( dynamic_string* pDestinationPath, const string_view& sourcePath );
+        void analyzePath();
+        void fixDirectorySeperators();
 
       private:
         memory_allocator* m_pAllocator;
-        dynamic_string    m_root;
+        error_id          m_error;
         dynamic_string    m_path;
-        dynamic_string    m_fileName;
-        dynamic_string    m_fileExtension;
-        dynamic_string    m_fullPath;
+        size_t            m_directoryStartIndex;
+        size_t            m_fileNameStartIndex;
+        size_t            m_fileExtensionStartIndex;
 
         //FK: Only store full path + index to offsets
     };

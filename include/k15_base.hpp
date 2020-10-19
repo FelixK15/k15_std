@@ -15,6 +15,7 @@
 
 #define K15_ENABLED( var ) ( var == K15_TRUE )
 
+#include <new>
 #include "k15_base_types.hpp"
 #include "k15_result.hpp"
 
@@ -50,6 +51,12 @@ namespace k15
     struct is_trivially_destructible
     {
         constexpr static bool value = __is_trivially_destructible( T );
+    };
+
+    template < typename T >
+    struct is_trivially_constructible
+    {
+        constexpr static bool value = __is_trivially_constructible( T );
     };
 } // namespace k15
 

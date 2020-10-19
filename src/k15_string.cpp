@@ -72,6 +72,54 @@ namespace k15
         return pAsciiStringRunningPtr;
     }
 
+    size_t findFirstIndexInString( const char* pString, char character )
+    {
+        const char* pRunningStringPtr = pString;
+        while ( *pRunningStringPtr != 0 )
+        {
+            if ( *pRunningStringPtr == character )
+            {
+                return ( pRunningStringPtr - pString );
+            }
+
+            ++pRunningStringPtr;
+        }
+
+        return string_view::invalidIndex;
+    }
+
+    size_t findLastIndexInString( const char* pString, char character )
+    {
+        const char* pRunningStringPtr = pString;
+        size_t      lastIndex         = string_view::invalidIndex;
+        while ( *pRunningStringPtr != 0 )
+        {
+            if ( *pRunningStringPtr == character )
+            {
+                lastIndex = ( pRunningStringPtr - pString );
+            }
+
+            ++pRunningStringPtr;
+        }
+
+        return lastIndex;
+    }
+
+    bool doesStringContainCharacter( const char* pString, char character )
+    {
+        while ( *pString != 0 )
+        {
+            if ( *pString == character )
+            {
+                true;
+            }
+
+            ++pString;
+        }
+
+        return false;
+    }
+
     string_view::string_view()
     {
         *this = empty;
@@ -143,28 +191,12 @@ namespace k15
 
     size_t string_view::findLast( char character ) const
     {
-        for ( size_t stringIndex = m_length - 1; stringIndex != 0; --stringIndex )
-        {
-            if ( m_pData[ stringIndex ] == character )
-            {
-                return stringIndex;
-            }
-        }
-
-        return invalidIndex;
+        return findLastIndexInString( m_pData, character );
     }
 
     bool string_view::contains( char character ) const
     {
-        for ( size_t stringIndex = 0u; stringIndex < m_length; ++stringIndex )
-        {
-            if ( m_pData[ stringIndex ] == character )
-            {
-                return true;
-            }
-        }
-
-        return false;
+        return doesStringContainCharacter( m_pData, character );
     }
 
     string_view string_view::subString( size_t startIndex ) const
@@ -184,4 +216,32 @@ namespace k15
         K15_ASSERT( index < m_length );
         return m_pData[ index ];
     }
+
+    dynamic_string::dynamic_string( memory_allocator* pAllocator, size_t initialCapacity )
+        : dynamic_array( pAllocator, initialCapacity )
+    {
+    }
+
+    dynamic_string::dynamic_string( memory_allocator* pAllocator, const string_view& stringView )
+        : dynamic_array( pAllocator, stringView.getLength() )
+    {
+        pushBackString( stringView );
+    }
+
+    char* dynamic_string::pushBackString( const char* pString )
+    {
+        return pushBackRange( pString, getAsciiStringLength( pString ) );
+    }
+
+    char* dynamic_string::pushBackString( const string_view& string )
+    {
+        return pushBackRange( string.getStart(), string.getLength() );
+    }
+
+    void dynamic_string::operator=( const string_view& stringView )
+    {
+        pushBackRange( stringView.getStart(), stringView.getLength() );
+        pushBack( 0 );
+    }
+
 }; // namespace k15

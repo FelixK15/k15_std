@@ -1,148 +1,118 @@
 #include "k15_std/include/k15_path.hpp"
 namespace k15
 {
+    bool isDirectorySeperator( char character )
+    {
+        return character == '\\' || character == '/';
+    }
+
+    constexpr static char directorySeperator = '/';
+
     path::path( memory_allocator* pAllocator )
+        : m_path( pAllocator, 128u )
     {
         m_pAllocator = pAllocator;
+        m_error      = error_id::success;
     }
 
-    void path::setRoot( const string_view& root )
+    path::path( memory_allocator* pAllocator, const string_view& path )
+        : m_path( pAllocator, path )
     {
-        K15_ASSERT( root.isEmpty() );
-
-        m_root.clear();
-
-        copyAndCleanPath( &m_root, root );
-        createFullPath();
+        m_error      = error_id::success;
+        m_pAllocator = pAllocator;
+        analyzePath();
     }
 
-    void path::setRelativePath( const string_view& relativePath )
+    void path::setCombinedPath( const string_view& pathA, const string_view& pathB )
     {
-        K15_ASSERT( relativePath.isEmpty() );
-
         m_path.clear();
+        m_path.pushBackString( pathA );
 
-        //FK: Only support file names with 1 extension
-        size_t lastDirSeperatorIndex = relativePath.findLast( '/' );
-        if ( lastDirSeperatorIndex == string_view::invalidIndex )
+        if ( !isDirectorySeperator( m_path.getLast() ) )
         {
-            lastDirSeperatorIndex = relativePath.findLast( '\\' );
+            m_path.pushBack( directorySeperator );
         }
 
-        string_view path = relativePath;
-
-        if ( lastDirSeperatorIndex != string_view::invalidIndex )
-        {
-            const string_view potentialFileName = relativePath.subString( lastDirSeperatorIndex );
-            if ( potentialFileName.contains( '.' ) )
-            {
-                setFileNameWithExtension( potentialFileName );
-                path = relativePath.subString( 0u, lastDirSeperatorIndex );
-            }
-        }
-
-        copyAndCleanPath( &m_path, path );
-        createFullPath();
-    }
-
-    void path::setFileNameWithExtension( const string_view& fileName )
-    {
-        K15_ASSERT( fileName.isEmpty() );
-
-        m_fileName.clear();
-        m_fileExtension.clear();
-
-        const size_t      extensionIndex = fileName.findLast( '.' );
-        const string_view extension      = fileName.subString( extensionIndex );
-
-        setFileExtension( extension );
-
-        const string_view fileNameWithoutExtension = fileName.subString( 0u, extensionIndex );
-        char*             pFileName                = m_fileName.pushBackRange( fileNameWithoutExtension.getLength() );
-
-        copyMemoryNonOverlapping( pFileName, fileNameWithoutExtension.getLength(), fileNameWithoutExtension.getStart(), fileNameWithoutExtension.getLength() );
-        createFullPath();
-    }
-
-    void path::setFileNameWithoutExtensions( const string_view& fileName )
-    {
-        K15_ASSERT( fileName.isEmpty() );
-
-        m_fileName.clear();
-        m_fileExtension.clear();
-
-        char* pFileName = m_fileName.pushBackRange( fileName.getLength() );
-
-        copyMemoryNonOverlapping( pFileName, fileName.getLength(), fileName.getStart(), fileName.getLength() );
-        createFullPath();
-    }
-
-    void path::setFileExtension( const string_view& fileExtensions )
-    {
-        K15_ASSERT( fileExtensions.isEmpty() );
-
-        m_fileExtension.clear();
-
-        char* pFileExtension = m_fileExtension.pushBackRange( fileExtensions.getLength() );
-        copyMemoryNonOverlapping( pFileExtension, fileExtensions.getLength(), fileExtensions.getStart(), fileExtensions.getLength() );
-        createFullPath();
+        m_path.pushBackString( pathB );
+        fixDirectorySeperators();
+        analyzePath();
     }
 
     bool path::isDirectory() const
     {
-        if ( m_fullPath.isEmpty() )
-        {
-            return false;
-        }
-        return *m_fullPath.getEnd() == '/';
+        return m_fileNameStartIndex == string_view::invalidIndex;
     }
 
     bool path::isFile() const
     {
-        if ( m_fullPath.isEmpty() )
-        {
-            return false;
-        }
-        return !isDirectory();
+        return m_fileNameStartIndex != string_view::invalidIndex;
     }
 
-    void path::createFullPath()
+    bool path::isEmpty() const
     {
-        m_fullPath.clear();
+        return m_path.isEmpty();
+    }
 
-        if ( m_root.hasElements() )
+    void path::clear()
+    {
+        m_fileExtensionStartIndex = 0u;
+        m_fileNameStartIndex      = 0u;
+        m_directoryStartIndex     = 0u;
+
+        m_path.clear();
+        m_error = error_id::success;
+    }
+
+    bool path::hasError() const
+    {
+        return m_error != error_id::success;
+    }
+
+    error_id path::getError() const
+    {
+        return m_error;
+    }
+
+    void path::analyzePath()
+    {
+        if ( m_path.isEmpty() )
         {
-            char* pRoot = m_fullPath.pushBackRange( m_root.getSize() );
-            copyMemoryNonOverlapping( pRoot, m_root.getSize(), m_root.getStart(), m_root.getSize() );
-
-            if ( m_fullPath.getLast() != '/' )
-            {
-                m_fullPath.pushBack( '/' );
-            }
+            return;
         }
 
-        if ( m_path.hasElements() )
+        m_directoryStartIndex = findFirstIndexInString( m_path.getStart(), '/' );
+        m_fileNameStartIndex  = findLastIndexInString( m_path.getStart(), '/' );
+
+        if ( m_fileNameStartIndex == m_directoryStartIndex || m_fileNameStartIndex == m_path.getSize() )
         {
-            char* pPath = m_fullPath.pushBackRange( m_path.getSize() );
-            copyMemoryNonOverlapping( pPath, m_path.getSize(), m_path.getStart(), m_path.getSize() );
+            m_fileNameStartIndex      = string_view::invalidIndex;
+            m_fileExtensionStartIndex = string_view::invalidIndex;
+        }
+        else
+        {
+            m_fileExtensionStartIndex = findLastIndexInString( m_path.getStart(), '.' );
         }
     }
 
-    void path::copyAndCleanPath( dynamic_string* pDestinationPath, const string_view& sourcePath )
+    void path::fixDirectorySeperators()
     {
-        const size_t sourcePathLength      = sourcePath.getLength();
-        size_t       lastDirSeperatorIndex = ( ~0 );
-        for ( size_t sourcePathIndex = 0u; sourcePathIndex < sourcePathLength; ++sourcePathIndex )
+        size_t lastDirectorySeperatorIndex = string_view::invalidIndex;
+        for ( size_t pathCharIndex = 0u; pathCharIndex < m_path.getSize(); ++pathCharIndex )
         {
-            const char sourcePathCharacter = sourcePath[ sourcePathIndex ];
-            if ( sourcePathCharacter == '\\' && lastDirSeperatorIndex != ( sourcePathIndex - 1u ) )
+            if ( isDirectorySeperator( m_path[ pathCharIndex ] ) )
             {
-                pDestinationPath->pushBack( '/' );
-                lastDirSeperatorIndex = sourcePathIndex;
-                continue;
-            }
+                if ( lastDirectorySeperatorIndex == ( pathCharIndex - 1 ) )
+                {
+                    //FK: detected 2 or more joined dir seperator - remove current seperator
+                    m_path.eraseSortedByIndex( pathCharIndex );
+                    --pathCharIndex;
 
-            pDestinationPath->pushBack( sourcePathCharacter );
+                    continue;
+                }
+
+                m_path[ pathCharIndex ]     = directorySeperator;
+                lastDirectorySeperatorIndex = pathCharIndex;
+            }
         }
     }
 }

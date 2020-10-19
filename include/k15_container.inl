@@ -28,24 +28,29 @@ namespace k15
     }
 
     template < typename T >
-    bool slice< T >::swapTo( slice< T >* pContainer )
+    void slice< T >::swapFrom( slice< T >* pContainer )
     {
-        if ( !pContainer->copyTo( this ) )
-        {
-            return false;
-        }
+        K15_ASSERT( pContainer != nullptr );
+        m_pBuffer             = pContainer->m_pBuffer;
+        m_capacity            = pContainer->m_capacity;
+        m_size                = pContainer->m_size;
+        m_pAllocator          = pContainer->m_pAllocator;
+        m_pGrowBufferFunction = pContainer->m_pGrowBufferFunction;
 
-        pContainer->m_capacity = 0;
-        pContainer->m_size     = 0;
         pContainer->m_pBuffer  = nullptr;
-
-        return true;
+        pContainer->m_capacity = 0u;
+        pContainer->m_size     = 0u;
     }
 
     template < typename T >
-    bool slice< T >::copyTo( slice< T >* pContainer )
+    bool slice< T >::copyFrom( const slice< T >* pContainer )
     {
-        T* pData = pContainer->pushBackRange( m_size );
+        K15_ASSERT( pContainer != nullptr );
+
+        m_pAllocator          = pContainer->m_pAllocator;
+        m_pGrowBufferFunction = pContainer->m_pGrowBufferFunction;
+
+        T* pData = pushBackRange( pContainer->getSize() );
         if ( pData == nullptr )
         {
             return false;
@@ -55,27 +60,15 @@ namespace k15
         {
             for ( size_t elementIndex = 0u; elementIndex < m_size; ++elementIndex )
             {
-                pData[ elementIndex ] = m_pBuffer[ elementIndex ];
+                pData[ elementIndex ] = pContainer->getElementByIndex( elementIndex );
             }
         }
         else
         {
-            copyMemoryNonOverlapping( pData, pContainer->m_size * sizeof( T ), m_pBuffer, m_size * sizeof( T ) );
+            copyMemoryNonOverlapping( pData, m_capacity * sizeof( T ), pContainer->getStart(), pContainer->getSize() * sizeof( T ) );
         }
 
         return true;
-    }
-
-    template < typename T >
-    bool slice< T >::swapFrom( slice< T >* pContainer )
-    {
-        return pContainer->swapTo( this );
-    }
-
-    template < typename T >
-    bool slice< T >::copyFrom( slice< T >* pContainer )
-    {
-        return pContainer->copyTo( this );
     }
 
     template < typename T >
@@ -133,10 +126,7 @@ namespace k15
     template < typename T >
     T* slice< T >::pushBack( T value )
     {
-        T* pValue = pushBack();
-        *pValue   = value;
-
-        return pValue;
+        return pushBackRange( &value, 1u );
     }
 
     template < typename T >
@@ -146,7 +136,7 @@ namespace k15
     }
 
     template < typename T >
-    T* slice< T >::pushBackRange( uint32 elementCount )
+    T* slice< T >::pushBackRange( const T* pElements, size_t elementCount )
     {
         if ( m_size + elementCount >= m_capacity )
         {
@@ -158,21 +148,76 @@ namespace k15
 
         K15_ASSERT( m_pBuffer != nullptr );
 
-        T* pDataStart = m_pBuffer + m_size;
+        T* pData = m_pBuffer + m_size;
         m_size += elementCount;
-        return pDataStart;
+
+        if ( is_trivially_assignable< T >::value )
+        {
+            copyMemoryNonOverlapping( pData, elementCount * sizeof( T ), pElements, elementCount * sizeof( T ) );
+        }
+        else
+        {
+            T* pDataRunningPtr = pData;
+            for ( size_t elementIndex = 0u; elementIndex < elementCount; ++elementIndex )
+            {
+                pDataRunningPtr = new ( pDataRunningPtr ) T( pElements[ elementIndex ] );
+                ++pDataRunningPtr;
+            }
+        }
+
+        return pData;
     }
 
     template < typename T >
-    uint32 slice< T >::getSize() const
+    T* slice< T >::pushBackRange( size_t elementCount )
+    {
+        if ( m_size + elementCount >= m_capacity )
+        {
+            if ( !m_pGrowBufferFunction( this, m_pAllocator, m_size + elementCount ) )
+            {
+                return nullptr;
+            }
+        }
+
+        K15_ASSERT( m_pBuffer != nullptr );
+
+        T* pData = m_pBuffer + m_size;
+        m_size += elementCount;
+
+        if ( !is_trivially_constructible< T >::value )
+        {
+            T* pDataRunningPtr = pData;
+            for ( size_t elementIndex = 0u; elementIndex < elementCount; ++elementIndex )
+            {
+                pDataRunningPtr = new ( pDataRunningPtr ) T();
+                ++pDataRunningPtr;
+            }
+        }
+
+        return pData;
+    }
+
+    template < typename T >
+    size_t slice< T >::getSize() const
     {
         return m_size;
     }
 
     template < typename T >
-    uint32 slice< T >::getCapacity() const
+    size_t slice< T >::getCapacity() const
     {
         return m_capacity;
+    }
+
+    template < typename T >
+    bool slice< T >::reserve( size_t size )
+    {
+        if ( m_capacity <= size )
+        {
+            return true;
+        }
+
+        return m_pGrowBufferFunction( this, m_pAllocator, size );
     }
 
     template < typename T >
@@ -206,6 +251,71 @@ namespace k15
     }
 
     template < typename T >
+    void slice< T >::eraseSortedByIndex( size_t index )
+    {
+        K15_ASSERT( index < m_size );
+        m_size -= 1u;
+
+        if ( index == ( m_size ) )
+        {
+            return;
+        }
+
+        void*        pDestination = m_pBuffer + index;
+        void*        pSource      = m_pBuffer + index + 1u;
+        const size_t bytesToCopy  = ( m_size - index ) * sizeof( T );
+        copyMemoryNonOverlapping( pDestination, m_capacity, pSource, bytesToCopy );
+    }
+
+    template < typename T >
+    void slice< T >::eraseUnsortedByIndex( size_t index )
+    {
+        K15_ASSERT( index >= m_size );
+        m_size -= 1u;
+
+        if ( index == ( m_size ) )
+        {
+            return;
+        }
+
+        m_pBuffer[ index ] = m_pBuffer[ m_size ];
+    }
+
+    template < typename T >
+    void slice< T >::eraseSorted( const T& element )
+    {
+        const size_t index = findElementIndex( element );
+        if ( index != invalidIndex )
+        {
+            eraseSortedByIndex( index );
+        }
+    }
+
+    template < typename T >
+    void slice< T >::eraseUnsorted( const T& element )
+    {
+        const size_t index = findElementIndex( element );
+        if ( index != invalidIndex )
+        {
+            eraseUnsortedByIndex( index );
+        }
+    }
+
+    template < typename T >
+    size_t slice< T >::findElementIndex( const T& element )
+    {
+        for ( size_t index = 0u; index < m_size; ++index )
+        {
+            if ( m_pBuffer[ index ] == element )
+            {
+                return index;
+            }
+        }
+
+        return invalidIndex;
+    }
+
+    template < typename T >
     T& slice< T >::getElementByIndex( size_t index )
     {
         K15_ASSERT( index < m_size );
@@ -231,7 +341,7 @@ namespace k15
         return getElementByIndex( index );
     }
 
-    template < typename T, uint32 Size >
+    template < typename T, size_t Size >
     dynamic_array< T, Size >::dynamic_array( memory_allocator* pAllocator, size_t initialCapacity )
     {
         m_pBuffer             = m_staticBuffer;
@@ -247,13 +357,13 @@ namespace k15
         }
     }
 
-    template < typename T, uint32 Size >
+    template < typename T, size_t Size >
     dynamic_array< T, Size >::~dynamic_array()
     {
         freeBuffer();
     }
 
-    template < typename T, uint32 Size >
+    template < typename T, size_t Size >
     bool8 dynamic_array< T, Size >::create( memory_allocator* pAllocator, size_t initialCapacity )
     {
         K15_ASSERT( !m_isInitialized );
@@ -264,7 +374,7 @@ namespace k15
         return createdSuccessfully;
     }
 
-    template < typename T, uint32 Size >
+    template < typename T, size_t Size >
     void dynamic_array< T, Size >::freeBuffer()
     {
         K15_ASSERT( m_pAllocator != nullptr );
@@ -275,8 +385,8 @@ namespace k15
         }
     }
 
-    template < typename T, uint32 Size >
-    bool8 dynamic_array< T, Size >::growBuffer( slice< T >* pSlice, memory_allocator* pAllocator, uint32 capacity )
+    template < typename T, size_t Size >
+    bool8 dynamic_array< T, Size >::growBuffer( slice< T >* pSlice, memory_allocator* pAllocator, size_t capacity )
     {
         dynamic_array< T, Size >* pArray      = ( dynamic_array< T, Size >* )pSlice;
         const int                 newCapacity = getMax( capacity, pArray->m_capacity * 2 );
@@ -348,7 +458,7 @@ namespace k15
     }
 
     template < typename T >
-    bool8 dynamic_array< T >::growBuffer( slice< T >* pSlice, memory_allocator* pAllocator, uint32 capacity )
+    bool8 dynamic_array< T >::growBuffer( slice< T >* pSlice, memory_allocator* pAllocator, size_t capacity )
     {
         dynamic_array< T >* pArray = ( dynamic_array< T >* )pSlice;
 

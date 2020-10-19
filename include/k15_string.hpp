@@ -14,6 +14,11 @@ namespace k15
 
     const char* findNextAsciiWhiteSpace( const char* pAsciiString );
 
+    size_t findFirstIndexInString( const char* pString, char character );
+    size_t findLastIndexInString( const char* pString, char character );
+
+    bool doesStringContainCharacter( const char* pString, char character );
+
     class string_view
     {
       public:
@@ -52,6 +57,18 @@ namespace k15
 
     const string_view string_view::empty        = string_view( "" );
     const size_t      string_view::invalidIndex = ( ~0 );
+
+    class dynamic_string : public dynamic_array< char >
+    {
+      public:
+        dynamic_string( memory_allocator* pAllocator, size_t initialCapacity );
+        dynamic_string( memory_allocator* pAllocator, const string_view& stringView );
+
+        char* pushBackString( const char* pString );
+        char* pushBackString( const string_view& string );
+
+        void operator=( const string_view& stringView );
+    };
 }; // namespace k15
 
 #endif //K15_STRING_INCLUDE
