@@ -131,6 +131,12 @@ namespace k15
         m_length = stringView.getLength();
     }
 
+    string_view::string_view( const path& path )
+    {
+        m_pData  = path.getStart();
+        m_length = path.getLength();
+    }
+
     string_view::string_view( const char* pString )
     {
         m_pData = pString;
@@ -215,6 +221,14 @@ namespace k15
     {
         K15_ASSERT( index < m_length );
         return m_pData[ index ];
+    }
+
+    string_view& string_view::operator=( const path& path )
+    {
+        m_pData  = path.getStart();
+        m_length = path.getLength();
+
+        return *this;
     }
 
     dynamic_string::dynamic_string( memory_allocator* pAllocator, size_t initialCapacity )

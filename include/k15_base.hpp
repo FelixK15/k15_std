@@ -15,6 +15,8 @@
 
 #define K15_ENABLED( var ) ( var == K15_TRUE )
 
+#define K15_ARRAY_SIZE( arr ) ( sizeof( arr ) / sizeof( arr[ 0 ] ) )
+
 #include <new>
 #include "k15_base_types.hpp"
 #include "k15_result.hpp"

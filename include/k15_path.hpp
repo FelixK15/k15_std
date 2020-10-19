@@ -13,7 +13,7 @@ namespace k15
         path( memory_allocator* pAllocator );
         path( memory_allocator* pAllocator, const string_view& path );
 
-        void setCombinedPath( const string_view& pathA, const string_view& pathB );
+        bool setCombinedPath( const string_view& pathA, const string_view& pathB );
 
         bool isDirectory() const;
         bool isFile() const;
@@ -21,6 +21,11 @@ namespace k15
         bool isEmpty() const;
 
         void clear();
+
+        const char* getStart() const;
+        const char* getEnd() const;
+
+        size_t getLength() const;
 
         bool     hasError() const;
         error_id getError() const;
@@ -39,6 +44,8 @@ namespace k15
 
         //FK: Only store full path + index to offsets
     };
+
+    bool doesFileExist( const string_view& filePath );
 }
 
 #endif //K15_PATH_INCLUDE

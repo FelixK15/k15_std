@@ -6,6 +6,8 @@
 
 namespace k15
 {
+    class path;
+
     char   toAsciiLower( char asciiRune );
     char   toAsciiUpper( char asciiRune );
     bool   isAsciiWhiteSpace( char asciiRune );
@@ -24,6 +26,7 @@ namespace k15
       public:
         string_view();
         string_view( const string_view& stringView );
+        string_view( const path& path );
         string_view( const char* pString );
         string_view( const char* pString, size_t stringLength );
         string_view( const char* pStart, const char* pEnd );
@@ -45,6 +48,8 @@ namespace k15
         string_view subString( size_t startIndex, size_t length ) const;
 
         char operator[]( size_t index ) const;
+
+        string_view& operator=( const path& path );
 
       public:
         static const string_view empty;

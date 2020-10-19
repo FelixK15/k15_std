@@ -23,7 +23,7 @@ namespace k15
         analyzePath();
     }
 
-    void path::setCombinedPath( const string_view& pathA, const string_view& pathB )
+    bool path::setCombinedPath( const string_view& pathA, const string_view& pathB )
     {
         m_path.clear();
         m_path.pushBackString( pathA );
@@ -33,9 +33,16 @@ namespace k15
             m_path.pushBack( directorySeperator );
         }
 
-        m_path.pushBackString( pathB );
+        const void* pData = m_path.pushBackString( pathB );
+        if ( pData == nullptr )
+        {
+            return false;
+        }
+
         fixDirectorySeperators();
         analyzePath();
+
+        return true;
     }
 
     bool path::isDirectory() const
@@ -61,6 +68,21 @@ namespace k15
 
         m_path.clear();
         m_error = error_id::success;
+    }
+
+    const char* path::getStart() const
+    {
+        return m_path.getStart();
+    }
+
+    const char* path::getEnd() const
+    {
+        return m_path.getEnd();
+    }
+
+    size_t path::getLength() const
+    {
+        return m_path.getSize();
     }
 
     bool path::hasError() const
