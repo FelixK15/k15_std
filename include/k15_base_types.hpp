@@ -19,6 +19,25 @@ namespace k15
 
     typedef float  float32;
     typedef double float64;
+
+    template < typename T >
+    struct handle
+    {
+        static handle< T >       create( T value );
+        static const handle< T > invalid;
+
+        handle();
+        handle( T value );
+
+        bool isInvalid() const;
+        bool isValid() const;
+
+        void setInvalid();
+
+        T value;
+    };
 } // namespace k15
+
+#include "k15_base_types.inl"
 
 #endif //K15_BASE_TYPES_INCLUDE

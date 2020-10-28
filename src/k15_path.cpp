@@ -28,6 +28,11 @@ namespace k15
         m_path.clear();
         m_path.pushBackString( pathA );
 
+        if ( m_path.getLast() == 0 )
+        {
+            m_path.popBack();
+        }
+
         if ( !isDirectorySeperator( m_path.getLast() ) )
         {
             m_path.pushBack( directorySeperator );
@@ -42,6 +47,7 @@ namespace k15
         fixDirectorySeperators();
         analyzePath();
 
+        m_path.pushBack( 0 );
         return true;
     }
 
@@ -67,7 +73,24 @@ namespace k15
         m_directoryStartIndex     = 0u;
 
         m_path.clear();
+        m_path.pushBack( 0 );
+
         m_error = error_id::success;
+    }
+
+    bool path::copyFrom( const path& other )
+    {
+        m_path.clear();
+        if ( !m_path.copyFrom( &other.m_path ) )
+        {
+            return false;
+        }
+
+        m_directoryStartIndex     = other.m_directoryStartIndex;
+        m_fileExtensionStartIndex = other.m_fileExtensionStartIndex;
+        m_fileNameStartIndex      = other.m_fileNameStartIndex;
+
+        return true;
     }
 
     const char* path::getStart() const
@@ -93,6 +116,12 @@ namespace k15
     error_id path::getError() const
     {
         return m_error;
+    }
+
+    path& path::operator=( const path& other )
+    {
+        copyFrom( other );
+        return *this;
     }
 
     void path::analyzePath()

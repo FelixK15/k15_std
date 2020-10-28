@@ -3,7 +3,7 @@
 
 #include "k15_std/include/k15_string.hpp"
 #include "k15_std/include/k15_memory.hpp"
-#include "k15_std/include/k15_Container.hpp"
+#include "k15_std/include/k15_container.hpp"
 
 namespace k15
 {
@@ -22,6 +22,8 @@ namespace k15
 
         void clear();
 
+        bool copyFrom( const path& other );
+
         const char* getStart() const;
         const char* getEnd() const;
 
@@ -29,6 +31,8 @@ namespace k15
 
         bool     hasError() const;
         error_id getError() const;
+
+        path& operator=( const path& other );
 
       private:
         void analyzePath();

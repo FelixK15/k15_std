@@ -9,7 +9,14 @@ namespace k15
     class bitmask
     {
       public:
-        bool8 isFlagSet( T flag ) const;
+        bitmask();
+        bitmask( T flag );
+        bitmask( T flag1, T flag2 );
+        bitmask( T flag1, T flag2, T flag3 );
+        bitmask( T flag1, T flag2, T flag3, T flag4 );
+
+        bool isEmpty() const;
+        bool isFlagSet( T flag ) const;
 
         void toggleFlag( T flag );
         void setFlag( T flag );

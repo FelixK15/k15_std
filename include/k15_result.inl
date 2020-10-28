@@ -68,4 +68,13 @@ namespace k15
     {
         return k15::getErrorString( m_errorId );
     }
+
+    template < typename T >
+    static result< T > createResult( error_id error, T value )
+    {
+        result< T > result( error );
+        result.m_value = value;
+
+        return result;
+    }
 }; // namespace k15

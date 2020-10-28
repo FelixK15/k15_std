@@ -138,7 +138,7 @@ namespace k15
     template < typename T >
     T* slice< T >::pushBackRange( const T* pElements, size_t elementCount )
     {
-        if ( m_size + elementCount >= m_capacity )
+        if ( m_size + elementCount > m_capacity )
         {
             if ( !m_pGrowBufferFunction( this, m_pAllocator, m_size + elementCount ) )
             {
@@ -171,7 +171,7 @@ namespace k15
     template < typename T >
     T* slice< T >::pushBackRange( size_t elementCount )
     {
-        if ( m_size + elementCount >= m_capacity )
+        if ( m_size + elementCount > m_capacity )
         {
             if ( !m_pGrowBufferFunction( this, m_pAllocator, m_size + elementCount ) )
             {
@@ -198,6 +198,22 @@ namespace k15
     }
 
     template < typename T >
+    T slice< T >::popBack()
+    {
+        K15_ASSERT( m_size > 0 );
+
+        --m_size;
+        return m_pBuffer[ m_size ];
+    }
+
+    template < typename T >
+    void slice< T >::setSize( size_t size )
+    {
+        K15_ASSERT( size < m_capacity );
+        m_size = size;
+    }
+
+    template < typename T >
     size_t slice< T >::getSize() const
     {
         return m_size;
@@ -207,6 +223,12 @@ namespace k15
     size_t slice< T >::getCapacity() const
     {
         return m_capacity;
+    }
+
+    template < typename T >
+    size_t slice< T >::getRemainingCapacity() const
+    {
+        return m_capacity - m_size;
     }
 
     template < typename T >
@@ -478,5 +500,114 @@ namespace k15
         pArray->m_pBuffer  = pNewBuffer;
 
         return true;
+    }
+
+    template < typename T >
+    array_view< T >::array_view()
+    {
+        m_pData = nullptr;
+        m_size  = 0u;
+    }
+
+    template < typename T >
+    array_view< T >::array_view( const T* pStart, const size_t size )
+    {
+        m_pData = pStart;
+        m_size  = size;
+    }
+
+    template < typename T >
+    array_view< T >::array_view( const slice< T >& slice )
+    {
+        m_pData = slice.getStart();
+        m_size  = slice.getSize();
+    }
+
+    template < typename T >
+    template < size_t N >
+    array_view< T >::array_view( const T ( &cArray )[ N ] )
+    {
+        m_pData = cArray;
+        m_size  = N;
+    }
+
+    template < typename T >
+    size_t array_view< T >::getSize() const
+    {
+        return m_size;
+    }
+
+    template < typename T >
+    bool array_view< T >::isEmpty() const
+    {
+        return m_size == 0u;
+    }
+
+    template < typename T >
+    bool array_view< T >::hasElements() const
+    {
+        return m_size > 0u;
+    }
+
+    template < typename T >
+    bool array_view< T >::isValid() const
+    {
+        return m_pData != nullptr;
+    }
+
+    template < typename T >
+    bool array_view< T >::isInvalid() const
+    {
+        return m_pData == nullptr;
+    }
+
+    template < typename T >
+    const T& array_view< T >::getFirst() const
+    {
+        K15_ASSERT( hasElements() );
+        return *m_pData;
+    }
+
+    template < typename T >
+    const T& array_view< T >::getLast() const
+    {
+        K15_ASSERT( hasElements() );
+        return m_pData[ m_size - 1 ];
+    }
+
+    template < typename T >
+    const T* array_view< T >::getStart() const
+    {
+        return m_pData;
+    }
+
+    template < typename T >
+    const T* array_view< T >::getEnd() const
+    {
+        return m_pData + m_size - 1;
+    }
+
+    template < typename T >
+    array_view< T > createArrayView( const T* pStart, const size_t size )
+    {
+        return array_view< T >( pStart, size );
+    }
+
+    template < typename T >
+    array_view< T > createArrayView( const slice< T >& slice )
+    {
+        return array_view< T >( slice );
+    }
+
+    template < typename T >
+    array_view< T > createArrayView( const T& element )
+    {
+        return array_view< T >( &element );
+    }
+
+    template < typename T, size_t N >
+    array_view< T > createArrayView( const T ( &cArray )[ N ] )
+    {
+        return array_view< T >( cArray, N );
     }
 }; // namespace k15

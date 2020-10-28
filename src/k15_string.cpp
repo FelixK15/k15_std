@@ -255,7 +255,6 @@ namespace k15
     void dynamic_string::operator=( const string_view& stringView )
     {
         pushBackRange( stringView.getStart(), stringView.getLength() );
-        pushBack( 0 );
     }
 
 }; // namespace k15

@@ -9,6 +9,7 @@
     }
 
 #define K15_UNUSED_VARIABLE( var ) ( void )( var )
+#define K15_NOT_IMPLEMENTED
 
 #define K15_TRUE  1
 #define K15_FALSE 0
@@ -16,6 +17,13 @@
 #define K15_ENABLED( var ) ( var == K15_TRUE )
 
 #define K15_ARRAY_SIZE( arr ) ( sizeof( arr ) / sizeof( arr[ 0 ] ) )
+
+#define K15_MAX( a, b ) ( a ) > ( b ) ? ( a ) : ( b )
+#define K15_MIN( a, b ) ( a ) < ( b ) ? ( a ) : ( b )
+
+#define K15_KiB( n ) ( n ) * 1024
+#define K15_MiB( n ) K15_KiB( n ) * 1024
+#define K15_GiB( n ) K15_MiB( n ) * 1024
 
 #include <new>
 #include "k15_base_types.hpp"

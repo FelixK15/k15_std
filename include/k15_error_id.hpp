@@ -15,7 +15,11 @@ namespace k15
         internal,
         not_supported,
         not_implemented,
-        not_found
+        not_found,
+        file_not_found,
+        invalid_argument,
+
+        generic
     };
 
     string_view getErrorString( error_id errorId )
@@ -28,6 +32,15 @@ namespace k15
         case error_id::out_of_memory:
             return "out of memory";
 
+        case error_id::socket_error:
+            return "socket error";
+
+        case error_id::listen_error:
+            return "listen error";
+
+        case error_id::parse_error:
+            return "parse error";
+
         case error_id::internal:
             return "internal";
 
@@ -36,6 +49,18 @@ namespace k15
 
         case error_id::not_implemented:
             return "not implemented";
+
+        case error_id::not_found:
+            return "not found";
+
+        case error_id::file_not_found:
+            return "file not found";
+
+        case error_id::invalid_argument:
+            return "invalid argument";
+
+        case error_id::generic:
+            return "generic";
         }
 
         return string_view::empty;

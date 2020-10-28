@@ -37,8 +37,13 @@ namespace k15
         T* pushBackRange( const T* pValues, size_t elementCount );
         T* pushBackRange( size_t elementCount );
 
+        T popBack();
+
+        void setSize( size_t size );
+
         size_t getSize() const;
         size_t getCapacity() const;
+        size_t getRemainingCapacity() const;
 
         bool reserve( size_t size );
 
@@ -113,6 +118,47 @@ namespace k15
       private:
         bool8 m_isInitialized;
     };
+
+    template < typename T >
+    class array_view
+    {
+      public:
+        array_view();
+        array_view( const T* pStart, const size_t size );
+        array_view( const slice< T >& slice );
+
+        template < size_t N >
+        array_view( const T ( &cArray )[ N ] );
+
+        size_t getSize() const;
+        bool   isEmpty() const;
+        bool   hasElements() const;
+        bool   isValid() const;
+        bool   isInvalid() const;
+
+        const T& getFirst() const;
+        const T& getLast() const;
+
+        const T* getStart() const;
+        const T* getEnd() const;
+
+      private:
+        const T* m_pData;
+        size_t   m_size;
+    };
+
+    template < typename T >
+    array_view< T > createArrayView( const T* pStart, const size_t size );
+
+    template < typename T >
+    array_view< T > createArrayView( const slice< T >& slice );
+
+    template < typename T >
+    array_view< T > createArrayView( const T& element );
+
+    template < typename T, size_t N >
+    array_view< T > createArrayView( const T ( &cArray )[ N ] );
+
 }; // namespace k15
 
 #include "k15_container.inl"

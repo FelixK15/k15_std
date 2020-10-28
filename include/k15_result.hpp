@@ -19,7 +19,6 @@ namespace k15
         bool        isOk() const;
         string_view getErrorString() const;
 
-      private:
         T        m_value;
         error_id m_errorId;
     };
@@ -38,6 +37,9 @@ namespace k15
       private:
         error_id m_errorId;
     };
+
+    template < typename T >
+    static result< T > createResult( error_id error, T value );
 } // namespace k15
 
 #include "k15_result.inl"
